@@ -54,7 +54,7 @@ with col2:
     traffic = st.selectbox("Traffic Level",
                            ["Low","Medium","High","Jam"])
     order_type = st.selectbox("Order Type",
-                              ["Meat","Vegetables","Meat or Vegetables"])
+                              ["Cabbage","Lettuce","Potatoes","Carrots"])
     vehicle = st.selectbox("Vehicle Type",
                            ["Bike","Car","Scooter"])
 
