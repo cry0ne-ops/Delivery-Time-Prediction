@@ -1,27 +1,22 @@
 # ============================================
 # AI-POWERED DELIVERY TIME OPTIMIZATION SYSTEM
-# Advanced Professional Thesis Version
+# Advanced Thesis Version - CLEAN
 # ============================================
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
 import folium
 from streamlit_folium import st_folium
-from openrouteservice import Client
 from datetime import datetime, timedelta
 import math
 
 # ============================================
-# CONFIGURATION
+# PAGE CONFIG
 # ============================================
 
 st.set_page_config(page_title="AI Delivery Optimization System", layout="wide")
 st.title("🚀 AI-Powered Intelligent Delivery Time Optimization System")
-
-# 🔑 Replace with your ORS key
-ORS_API_KEY = "YOUR_ORS_KEY"
 
 # ============================================
 # LOAD FULL PIPELINE MODELS
@@ -49,7 +44,7 @@ models = {
 col_input, col_prediction, col_map = st.columns([1,1,1.4])
 
 # ============================================
-# INPUT PANEL
+# INPUT SECTION
 # ============================================
 
 with col_input:
@@ -60,6 +55,7 @@ with col_input:
     pickup_time = st.time_input("Pickup Time")
 
     multiple_deliveries = st.slider("Multiple Deliveries", 1, 5, 1)
+    shelf_life = st.slider("Shelf Life (days)", 1, 10, 3)
 
     weather = st.selectbox("Weather Conditions",
                            ["Sunny","Cloudy","Rainy","Stormy","Fog"])
@@ -73,11 +69,6 @@ with col_input:
     vehicle = st.selectbox("Vehicle Type",
                            ["Bike","Car","Scooter"])
 
-# ============================================
-# LOCATION PANEL
-# ============================================
-
-with col_input:
     st.subheader("📍 Location Details")
 
     rest_lat = st.number_input("Restaurant Latitude", value=12.9716, format="%.6f")
@@ -86,7 +77,7 @@ with col_input:
     del_lon = st.number_input("Delivery Longitude", value=77.6245, format="%.6f")
 
 # ============================================
-# FEATURE ENGINEERING (MATCHES TRAINING)
+# FEATURE ENGINEERING (MATCH TRAINING EXACTLY)
 # ============================================
 
 Order_Day = order_date.day
@@ -99,15 +90,16 @@ input_data = {
     "Restaurant_longitude": rest_lon,
     "Delivery_location_latitude": del_lat,
     "Delivery_location_longitude": del_lon,
-    "multiple_deliveries": multiple_deliveries,
-    "Order_Day": Order_Day,
-    "Order_Month": Order_Month,
-    "Order_Hour": Order_Hour,
-    "Pickup_Hour": Pickup_Hour,
     "Weatherconditions": weather,
     "Road_traffic_density": traffic,
     "Type_of_order": order_type,
-    "Type_of_vehicle": vehicle
+    "Type_of_vehicle": vehicle,
+    "multiple_deliveries": multiple_deliveries,
+    "Shelf_life(days)": shelf_life,
+    "Order_Day": Order_Day,
+    "Order_Month": Order_Month,
+    "Order_Hour": Order_Hour,
+    "Pickup_Hour": Pickup_Hour
 }
 
 # ============================================
@@ -125,7 +117,7 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 # ============================================
-# PREDICTION BUTTON
+# PREDICTION
 # ============================================
 
 if st.button("🔮 Predict Delivery Time"):
@@ -136,14 +128,13 @@ if st.button("🔮 Predict Delivery Time"):
     for name, model in models.items():
         predictions[name] = round(model.predict(df_input)[0], 2)
 
-    # Use Random Forest as recommended
     best_model = "Random Forest"
     predicted_minutes = predictions[best_model]
 
     eta = datetime.combine(order_date, order_time) + timedelta(minutes=predicted_minutes)
 
     # ========================================
-    # DISPLAY PREDICTIONS
+    # DISPLAY RESULTS
     # ========================================
 
     with col_prediction:
@@ -155,7 +146,6 @@ if st.button("🔮 Predict Delivery Time"):
         st.success(f"🏆 Recommended Model: {best_model}")
         st.info(f"🕒 Estimated Arrival Time: {eta.strftime('%I:%M %p')}")
 
-        # Distance analytics
         straight_distance = haversine(rest_lat, rest_lon, del_lat, del_lon)
         st.markdown(f"**📏 Straight-Line Distance:** {straight_distance:.2f} km")
 
